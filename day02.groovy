@@ -27,7 +27,8 @@ inp.close()
 
 aim = 0 
 horz = 0
-inp = new File("day02_sample.in").newReader()
+depth = 0
+inp = new File("day02.in").newReader()
 
 while(line = inp.readLine()) {
     (dir, dist) = line.split(" ")
@@ -35,12 +36,14 @@ while(line = inp.readLine()) {
     switch(dir) {
         case "forward":
             horz += dist
-            aim *= dist
+            depth += aim * dist
             break
         case "up":
+            // depth -= dist
             aim -= dist
             break
         case "down":
+            // depth += dist
             aim += dist
             break
     }   
@@ -48,4 +51,5 @@ while(line = inp.readLine()) {
 
 println aim
 println horz
-println aim * horz
+println depth
+println depth * horz
