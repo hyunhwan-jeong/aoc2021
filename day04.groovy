@@ -2,14 +2,15 @@ class Bingo {
     private row, col, diag, anti
     private remains
     private board
+    private score
 
     public Bingo(lines) {
         this.diag = 0
         this.anti = 0
         this.row = new int[5]
         this.col = new int[5]
+        this.score = 0
         this.remains = 0
-
         this.board = new int[5][5]
         for (int i = 0; i < lines.size(); i++) {
             String[] numbers = lines[i].stripIndent().stripMargin().split("\s+")
@@ -21,6 +22,9 @@ class Bingo {
     }   
 
     public int check(int num) {
+        if(this.score > 0){
+            return 0
+        }
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
                 if (this.board[i][j] == num) {
@@ -29,12 +33,11 @@ class Bingo {
 
                     if(++this.row[i] == 5) {
                         //println "$this.remains $num"
-                        return this.remains * num
+                        this.score = this.remains * num
                     }
                     if(++this.col[j] == 5) {
                         //println "$this.remains $num"
-
-                        return this.remains * num
+                        this.score = this.remains * num
                     }
                     /*if (i == j) {
                         if(++this.diag == 5) {
@@ -53,7 +56,7 @@ class Bingo {
                 }
             }
         }
-        return 0
+        return this.score
     }
 
     public void show() {
@@ -82,20 +85,14 @@ new File("day04.in").withReader { reader ->
     }
 
     println players.size()
-    done = false
     for(num in numbers) {
         for(player in players) {
             ret = player.check(num)
             // player.show()
             if(ret > 0) {
-                print ret
-                done = true
-                break
+                println ret
             }
         }   
-        if(done) {
-            break
-        }
     }
 }
 
