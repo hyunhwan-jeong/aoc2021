@@ -32,27 +32,11 @@ class Bingo {
                     this.remains -= num
 
                     if(++this.row[i] == 5) {
-                        //println "$this.remains $num"
                         this.score = this.remains * num
                     }
                     if(++this.col[j] == 5) {
-                        //println "$this.remains $num"
                         this.score = this.remains * num
                     }
-                    /*if (i == j) {
-                        if(++this.diag == 5) {
-                            println "$this.remains $num"
-
-                            return this.remains * num
-                        }
-                    }
-                    if (i + j == 4) {
-                        if(++this.anti == 5) {
-                            println "$this.remains $num"
-
-                            return this.remains * num
-                        }
-                    }*/
                 }
             }
         }
@@ -75,7 +59,6 @@ new File("day04.in").withReader { reader ->
     numbers = reader.readLine().split(",").collect{ it as int }
     players = []
 
-    println numbers
     while( reader.readLine() != null ) {
         lines = []
         for(i in 0..4) {
@@ -84,11 +67,9 @@ new File("day04.in").withReader { reader ->
         players.add(new Bingo(lines))
     }
 
-    println players.size()
     for(num in numbers) {
         for(player in players) {
             ret = player.check(num)
-            // player.show()
             if(ret > 0) {
                 println ret
             }
