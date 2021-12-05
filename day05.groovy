@@ -25,18 +25,24 @@ for(i in 0..nlines-1) {
         for(j in from[i][0]..to[i][0]) {
             mat[j][from[i][1]]++
         }
-    } /*else {
+    } else {
         disp_y = from[i][0] < to[i][0] ? 1 : -1
         disp_x = from[i][1] < to[i][1] ? 1 : -1
 
         c_y = from[i][0]
         c_x = from[i][1]
-        do {
+        while(true) {
             mat[c_y][c_x]++
+
+            if(c_y == to[i][0] && c_x == to[i][1]) {
+                break
+            }
+
             c_y += disp_y
             c_x += disp_x
-        } while(c_y != to[i][0] || c_x != to[i][1])
-    }*/
+        } 
+        
+    }
 }
 
 for(i in 0..n-1) {
