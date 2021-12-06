@@ -1,4 +1,4 @@
-vec = new File("day06_sample.in").readLines().get(0).split(",").collect(it->it as int)
+vec = new File("day06.in").readLines().get(0).split(",").collect(it->it as int)
 
 for(i in 1..80) {
     nadds = 0
