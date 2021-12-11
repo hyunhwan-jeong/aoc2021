@@ -48,3 +48,55 @@ for(step in 1..100) {
 }
 
 println ret_task1
+
+B = []
+new File("day11.in").eachLine {
+    B.add(it.toCharArray().collect(i->i as String as int))
+}
+
+di = [-1, 0, 1, -1, 1, -1, 0, 1]
+dj = [-1, -1, -1, 0, 0, 1, 1, 1]
+
+step = 0
+while(++step) {
+    for(i in 0..9) {
+        for(j in 0..9) {
+            B[i][j]++
+        }
+    }
+
+    flash = new boolean[10][10]
+    do {
+        is_flashed = false
+        for(i in 0..9) {
+            for(j in 0..9) {
+                if(B[i][j] > 9 && !flash[i][j]) {
+                    for(k in 0..7) {
+                        ni = i + di[k]
+                        nj = j + dj[k]
+                        if(ni<0||ni>9) continue
+                        if(nj<0||nj>9) continue
+                        B[ni][nj]++
+                    }
+                    flash[i][j] = true
+                    is_flashed = true
+                }
+            }
+        }
+    } while(is_flashed);
+
+    is_syncronized = true
+    for(i in 0..9) {
+        for(j in 0..9) {
+            if(flash[i][j]) {
+                B[i][j] = 0
+                 
+            } else {
+                is_syncronized = false  
+            }
+        }
+    }
+    if(is_syncronized) break
+}
+
+println step
