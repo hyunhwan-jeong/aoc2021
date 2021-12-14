@@ -28,14 +28,13 @@ new File("day13.in").eachLine {
             newS.add([x,y])
         }
         S = newS.clone()
+        println S.size()
     }
 }
 
 
 max_x = S.collect(i->i[0]).max()
 max_y = S.collect(i->i[1]).max()
-println max_x
-println max_y
 
 B = new char[max_y+1][max_x+1]
 for(i in 0..max_y) {
