@@ -19,6 +19,51 @@ def solve(X) {
     C[N-1][M-1]
 }
 
+import groovy.transform.Canonical
+ 
+@Canonical
+class Node implements Comparable<Node> {
+    int cost
+    int i 
+    int j 
+    int compareTo(Node other) {
+        return cost <=> other?.cost
+    }
+}
+
+def solve2(X) {
+    def N = X.size()
+    def M = X[0].size()
+    println N
+    println M
+    def C = new int[N][M]
+    for(i in 0..N-1) for(j in 0..M-1) C[i][j] = 987654321
+
+    C[0][0] = 0
+    pq = new PriorityQueue<Node>()
+    pq.add(new Node(cost: 0, i:0, j: 0))
+    
+    di = [-1,1,0,0]
+    dj = [0,0,-1,1]
+    while(!pq.isEmpty()) {
+        def node = pq.poll()
+        def i = node.i
+        def j = node.j
+        if(i == N-1 && j == M-1) return C[i][j]
+        if(C[i][j] != node.cost) continue
+
+        for(k in 0..3) {
+            def ni = i + di[k]
+            def nj = j + dj[k]
+            if(ni < 0 || ni >= N || nj < 0 || nj >= M) continue
+            if(C[ni][nj] > C[i][j] + X[ni][nj]) {
+                C[ni][nj] = C[i][j] + X[ni][nj]
+                pq.add(new Node(cost: C[ni][nj], i: ni, j: nj))
+            }
+        }
+    }
+    return -987654321
+}
 B = []
 
 new File("day15.in").eachLine {
@@ -27,6 +72,7 @@ new File("day15.in").eachLine {
 }
 
 println solve(B)
+println solve2(B)
 
 N = B.size()
 M = B[0].size()
@@ -62,3 +108,4 @@ for(i in 0..L.size()-1) {
     }
 }
 println solve(L)
+println solve2(L)
