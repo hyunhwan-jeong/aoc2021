@@ -9,39 +9,42 @@ def to_dec(A) {
 }
 
 def get_version(C) {
+
     def version = to_dec(C[0..2])
     def packet_type = to_dec(C[3..5])
     def bin_str = C[0..C.size()-1].collect(i->i as String).join("")
-    //println "version: $version, type: $packet_type, with $bin_str"
     score += version
 
     def i = 6
     def rest = []
     if(packet_type == 4) {
-        number = 0
+        number = 0G
         do {
             is_ended = C[i] == 0
             number = number * 16 + to_dec(C[i+1..i+4])
             i += 5
         } while(!is_ended)
-        // while(i%4!=0) i++
+
         if(i <= C.size()-1) {
             rest = C[i..C.size()-1]
         } else {
             rest = []
         }
-        //println "rest ${rest.collect(a->a as String).join('')}"
+        println "return $number, $rest"
+        return [number, rest]
+
     } else {
         is_length_given = C[i++] == 0
+
+        def values = []
         if(is_length_given) {
             def len = to_dec(C[i..i+14])
-            //println "len is $len"
             i += 15
             
             rest = C[i..i+len-1]
             while(rest.size()>0) {
-                rest = get_version(rest)
-                //println "rest after mode 0 - ${rest.collect(a->a as String).join('')}"
+                (ret_num, rest) = get_version(rest)
+                values.add(ret_num)
             }
 
             if( i + len == C.size() ) {
@@ -55,14 +58,31 @@ def get_version(C) {
             //println "sz is $sz"
             i += 11
             rest = C[i..C.size()-1]
-            //println "rest is ${rest.join("")}"
             for(k in 0..sz-1) {
-                //println "k is $k"
-                rest = get_version(rest)
+                (ret_num, rest) = get_version(rest)
+                values.add(ret_num as BigInteger)
             }
         }
+        println "$packet_type, $values"
+        ret_val = 0G
+        if(packet_type == 0) {
+            
+            ret_val = values.sum()
+        }
+        else if(packet_type == 1) {
+            mul = 1G
+            for(c in values) mul *= c as BigInteger
+            ret_val = mul
+        }
+        else if(packet_type == 2) ret_val = values.min()
+        else if(packet_type == 3) ret_val = values.max()
+        else if(packet_type == 5) ret_val = values[0] > values[1] ? 1G: 0G
+        else if(packet_type == 6) ret_val =  values[0] < values[1] ? 1G: 0G
+        else if(packet_type == 7) ret_val = values[0] == values[1] ? 1G: 0G
+
+        return [ret_val as BigInteger, rest]
     }
-    rest
+    return [0 as BigInteger, []]
  }
 def solve(input) {
     B = []    
@@ -82,6 +102,5 @@ def solve(input) {
    
     score = 0
     println input
-    get_version(B)
-    println score
+    println get_version(B)[0]
 }
