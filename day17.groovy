@@ -26,6 +26,7 @@ def get_max_y(x_velo, y_velo) {
 }
 
 
+/*
 best = 0 
 for(x in 0..20) {
     for(y in 0..1000) {
@@ -35,5 +36,40 @@ for(x in 0..20) {
         }
     }
 }
-
 println best
+*/
+
+
+def has_reached(x_velo, y_velo) {
+    x = 0
+    y = 0
+    y_max = 0
+
+    while(1) {
+        x += x_velo
+        y += y_velo
+        y_max = Math.max(y, y_max)
+        if(x1 <= x && x <= x2 && y1 <= y && y <= y2) {
+            return true
+        }
+
+        if(y < Math.min(y1, y2)) {
+            return false
+        }
+
+        if(x_velo != 0) x_velo = x_velo > 0 ? x_velo - 1 : x_velo + 1
+        y_velo--
+    }
+    return false
+}
+
+cnt = 0
+for(x in 0..129) {
+    for(y in -150..2000) {
+        if(has_reached(x, y)) {
+            cnt++
+        }
+    }
+}
+
+println cnt
