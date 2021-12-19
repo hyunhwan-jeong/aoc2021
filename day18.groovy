@@ -111,7 +111,7 @@ def calc_score(l) {
     return calc_score(l[0])*3 + calc_score(l[1])*2
 }
 
-def solve(filename) {
+def solve_part1(filename) {
     def input = []
     new File(filename).eachLine {
         input.add(Eval.me(it))
@@ -139,6 +139,36 @@ def solve(filename) {
     calc_score(ret)
 }
 
-println solve("day18_sample.in")
-println solve("day18.in")
+//println solve_part1("day18_sample.in")
+//println solve_part1("day18.in")
 
+def solve_part2(filename) {
+    def input = []
+    new File(filename).eachLine {
+        input.add(Eval.me(it))
+    }
+    n = input.size()
+    best = 0
+    for(i in 0..n-1) for(j in 0..n-1) {
+        if(i==j) continue
+        snail_sum = add(input[i], input[j])
+        while(true) {
+            ret_explode = explode(snail_sum)
+            if(ret_explode != []) {
+                snail_sum = ret_explode
+                continue
+            }
+            ret_split = split(snail_sum)
+            if(ret_split != []) {
+                snail_sum = ret_split
+                continue
+            }
+            break
+        }
+        best = Math.max(best, calc_score(snail_sum))
+    }
+    return best
+}
+
+println solve_part2("day18_sample.in")
+println solve_part2("day18.in")
