@@ -23,11 +23,11 @@ def solve(filename) {
         }
     }
 
-    min_x = -5
-    min_y = -5
-    max_x = img[0].size() + 5
-    max_y = img.size() + 5
-    for(step in 1..2) {
+    min_x = -200
+    min_y = -200
+    max_x = img[0].size() + 200
+    max_y = img.size() + 200
+    for(step in 1..50) {
         next_lights = [] as Set
         for(i in min_y..max_y) {
             for(j in min_x..max_x) {
@@ -46,13 +46,13 @@ def solve(filename) {
             }
         }
         lights = next_lights.clone()
-        for(i in min_y..max_y) {
-            for(j in min_x..max_x) {
-                if([i,j] in lights) print "#"
-                else print "."
-            }
-            println ""
+    }
+    for(i in min_y..max_y) {
+        for(j in min_x..max_x) {
+            if([i,j] in lights) print "#"
+            else print "."
         }
+        println ""
     }
     lights.size()
 }
