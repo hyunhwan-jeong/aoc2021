@@ -120,10 +120,13 @@ q = [] as Queue
 
 q.add([0, scanner_with_rotations[0][0], 0, 0, 0])
 visited = new boolean[n]
+
+positions = []
 while(!q.isEmpty()) {
     (i, B, x, y, z) = q.poll()
     if(visited[i]) continue
     println "$i: $x $y $z"
+    positions.add([x,y,z])
     visited[i] = true
     B.each{
         beacons.add([it[0]+x, it[1]+y, it[2]+z])
@@ -149,3 +152,9 @@ while(!q.isEmpty()) {
 println visited
 println beacons.size()
 
+maxi = 0
+for(p1 in positions) for(p2 in positions) {
+    maxi = Math.max(maxi, Math.abs(p1[0]-p2[0]) + Math.abs(p1[1]-p2[1]) + Math.abs(p1[2]-p2[2]))
+}
+
+println maxi
