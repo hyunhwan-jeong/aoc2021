@@ -82,7 +82,7 @@ def find_candidates(R0, R1, axis) {
     def S0 = R0.collect{it[axis]} as HashSet
     def S1 = R1.collect{it[axis]} as HashSet
     
-    for(pos in -2000..2000) {
+    for(pos in -3000..3000) {
         def cnt = 0
         S1.each{
             where = pos + it
