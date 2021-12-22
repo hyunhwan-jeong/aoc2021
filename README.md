@@ -22,3 +22,7 @@ while the generated string has two `N`s and a `C`.
 2. After matching the generated pairs and the count of each character in the generated string, I found that we only need to count the second letter of each pair.
 
 3. Another struggle point was that how to deal with the first character of the input string. My solution was making a pseudo rule with an empty character and the first character, like `" X" -> "X"`. 
+
+## TODO
+
+* Fix Day 20 code (although I solved the Day 20)

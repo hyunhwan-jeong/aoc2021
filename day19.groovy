@@ -1,5 +1,6 @@
 
 scanner = [[]]
+rmat = []
 
 new File("day19_sample.in").eachLine{ line ->
     if(line.startsWith("---")) {
@@ -11,33 +12,117 @@ new File("day19_sample.in").eachLine{ line ->
     }
 }
 
-def roll(S) {
-    S.collect(v -> [v[0], v[2], -v[1]])
+def calc_det(mat) {
+    def ret = 0
+    for(j in 0..2) {
+        def mul = 1
+        for(i in 0..2) {
+            mul *= mat[i][(i+j)%3]
+        }
+        ret += mul
+    }
+
+
+    for(j in 0..2) {
+        def mul = 1
+        k = 0 
+        for(i in 2..0) {
+            mul *= mat[i][(j+k)%3]
+            k++
+        }
+        ret -= mul
+    }
+
+    return ret
 }
 
-def turn(S) {
-    S.collect(v -> [-v[1], v[0], v[2]])
-}
-
-def rotations(S) {
-    ret = [S]
-    for(cycle in 1..2) {
-        for(step in 1..3) {
-            S = roll(S)
-            ret.add(S)
-            for(i in 1..3) {
-                S = turn(S)
-                ret.add(S)
+def gen_rotation_mat(a, b, c) {
+    for(i in [1,-1]) {
+        for(j in [1,-1]) {
+            for(k in [1,-1]) {
+                def mat = new int[3][3]
+                mat[0][a] = i
+                mat[1][b] = j
+                mat[2][c] = k
+                det = calc_det(mat)
+                if(det == 1) rmat.add(mat)
             }
         }
-        S = roll(turn(roll(S)))
-        ret.add(S)
+    }
+       
+}
+
+gen_rotation_mat(0, 1, 2)
+gen_rotation_mat(0, 2, 1)
+gen_rotation_mat(1, 0, 2)
+gen_rotation_mat(1, 2, 0)
+gen_rotation_mat(2, 0, 1)
+gen_rotation_mat(2, 1, 0)
+
+def rotate(S) {
+    def ret = []
+    for(mat in rmat) {
+        def new_S = S.collect { it->
+            def x = it[0]
+            def y = it[1]
+            def z = it[2]
+            def x2 = mat[0][0]*x + mat[0][1]*y + mat[0][2]*z
+            def y2 = mat[1][0]*x + mat[1][1]*y + mat[1][2]*z
+            def z2 = mat[2][0]*x + mat[2][1]*y + mat[2][2]*z
+            [x2,y2,z2]
+        }
+        ret.add(new_S)
+        
     }
     ret
 }
 
-
-R = scanner.collect{
-    rotations(it)
+def find_candidates(R0, R1, axis) {
+    def ret = []
+    def S0 = R0.collect{it[axis]} as HashSet
+    def S1 = R1.collect{it[axis]} as HashSet
+    
+    for(pos in -2000..2000) {
+        def cnt = 0
+        S1.each{
+            where = pos + it
+            if(S0.contains(where)) ++cnt
+        }
+        if(cnt>=12) ret.add(pos)
+    }
+    ret
 }
 
+println rmat[0]
+println rmat[2]
+scanner_with_rotations = scanner.collect { rotate(it) }
+n = scanner_with_rotations.size()
+C = []
+for(i in 0..n-1) C.add(new boolean[n])
+
+def is_matched(va, vb, vc, R0, R1, C0, C1) {
+    def S0 = R0 as HashSet
+    for(a in va) for(b in vb) for(c in vc) {
+        def S1 = R1.collect{[it[0]+a,it[1]+b,it[2]+c]} as HashSet
+        if(S0.intersect(S1).size() < 12) continue 
+
+        return true
+    }
+    return false
+}
+
+for(i in 0..n-1) {
+    for(j in 0..n-1) {
+        if(i==j) continue
+        for(k in 0..23) {
+            def ret0 = find_candidates(scanner_with_rotations[i][0], scanner_with_rotations[j][k], 0)
+            if(ret0.isEmpty()) continue
+            def ret1 = find_candidates(scanner_with_rotations[i][0], scanner_with_rotations[j][k], 1)
+            if(ret1.isEmpty()) continue
+            def ret2 = find_candidates(scanner_with_rotations[i][0], scanner_with_rotations[j][k], 2)
+            if(ret2.isEmpty()) continue
+            println "$i $j $k: " +  is_matched(ret0, ret1, ret2, scanner_with_rotations[i][0], scanner_with_rotations[j][k], C[i], C[j])
+        }
+
+    }
+}
