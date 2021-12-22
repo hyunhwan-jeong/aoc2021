@@ -2,7 +2,7 @@
 scanner = [[]]
 rmat = []
 
-new File("day19_sample.in").eachLine{ line ->
+new File("day19.in").eachLine{ line ->
     if(line.startsWith("---")) {
     }
     else if(line == "") scanner.add([])
@@ -59,6 +59,8 @@ gen_rotation_mat(1, 2, 0)
 gen_rotation_mat(2, 0, 1)
 gen_rotation_mat(2, 1, 0)
 
+println rmat.size()
+
 def rotate(S) {
     def ret = []
     for(mat in rmat) {
@@ -77,24 +79,26 @@ def rotate(S) {
     ret
 }
 
+
 def find_candidates(R0, R1, axis) {
-    def ret = []
+    
     def S0 = R0.collect{it[axis]} as HashSet
     def S1 = R1.collect{it[axis]} as HashSet
     
-    for(pos in -3000..3000) {
-        def cnt = 0
-        S1.each{
-            where = pos + it
-            if(S0.contains(where)) ++cnt
-        }
-        if(cnt>=12) ret.add(pos)
+    diff = [:]
+
+    for(s0 in S0) for(s1 in S1) {
+        d = s0-s1
+        if(d in diff) diff[d]++
+        else diff[d] = 1
+    }
+    def ret = []
+    diff.each { k,v->
+        if(v >= 6) ret.add(k)
     }
     ret
 }
 
-println rmat[0]
-println rmat[2]
 scanner_with_rotations = scanner.collect { rotate(it) }
 n = scanner_with_rotations.size()
 
@@ -134,7 +138,7 @@ while(!q.isEmpty()) {
             if(ret2.isEmpty()) continue
             def match_ret = match(ret0, ret1, ret2, B, scanner_with_rotations[j][k])
             if(match_ret != null) {
-                println "match at $i and $j"
+                //println "match at $i and $j"
                 q.add([j, scanner_with_rotations[j][k], match_ret[0]+x, match_ret[1]+y, match_ret[2]+z])
                 break
             }
@@ -143,5 +147,5 @@ while(!q.isEmpty()) {
 }
 
 println visited
-println beacons
 println beacons.size()
+
