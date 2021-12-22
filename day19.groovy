@@ -97,8 +97,28 @@ println rmat[0]
 println rmat[2]
 scanner_with_rotations = scanner.collect { rotate(it) }
 n = scanner_with_rotations.size()
+
+
 C = []
-for(i in 0..n-1) C.add(new boolean[n])
+p_idx = 0
+for(i in 0..n-1) {
+    def lst = scanner[i].collect{
+        p_idx++
+    }
+    C.add(lst)
+}
+
+parents = new int[p_idx]
+Arrays.fill(parents,-1)
+
+def union(i,j) {
+    parents[find(i)] = find(j)
+}
+
+def find(i) {
+    if(parents[i] == -1) return i
+    return find(parents[i])
+}
 
 def is_matched(va, vb, vc, R0, R1, C0, C1) {
     def S0 = R0 as HashSet
@@ -106,14 +126,30 @@ def is_matched(va, vb, vc, R0, R1, C0, C1) {
         def S1 = R1.collect{[it[0]+a,it[1]+b,it[2]+c]} as HashSet
         if(S0.intersect(S1).size() < 12) continue 
 
+        def i = 0
+        M0 = [:]
+        R0.each{
+            M0[it] = i
+            i++
+        }
+
+        def j = 0
+        R1.each {
+            def x = it[0]+a
+            def y = it[1]+b
+            def z = it[2]+c
+            if([x,y,z] in M0) {
+                union(C0[M0[[x,y,z]]], C1[j])
+            }
+            j++
+        }
         return true
     }
     return false
 }
 
-for(i in 0..n-1) {
-    for(j in 0..n-1) {
-        if(i==j) continue
+for(i in 0..n-2) {
+    for(j in i+1..n-1) {
         for(k in 0..23) {
             def ret0 = find_candidates(scanner_with_rotations[i][0], scanner_with_rotations[j][k], 0)
             if(ret0.isEmpty()) continue
@@ -122,7 +158,19 @@ for(i in 0..n-1) {
             def ret2 = find_candidates(scanner_with_rotations[i][0], scanner_with_rotations[j][k], 2)
             if(ret2.isEmpty()) continue
             println "$i $j $k: " +  is_matched(ret0, ret1, ret2, scanner_with_rotations[i][0], scanner_with_rotations[j][k], C[i], C[j])
+            break
+            /*if(is_matched(ret0, ret1, ret2, scanner_with_rotations[i][0], scanner_with_rotations[j][k], C[i], C[j])) {
+                break
+            }*/
         }
 
     }
 }
+
+ret = (0..parents.size()-1).collect {
+    find(it)
+} as Set
+
+println parents.size()
+println ret 
+println ret.size()
