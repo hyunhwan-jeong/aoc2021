@@ -109,10 +109,15 @@ while(!pq.isEmpty()) {
 
     def visited = new boolean[K]
     // println "testing... at $node.cost"
+
     for(s in state) {
         visited[s[0]] = true
         visited[s[1]] = true
     }
+
+    def n_at_top = 0
+    for(i in 0..10) if(visited[i]) ++n_at_top
+
 
     for(i in 0..3) {
         if(state[i]==GOAL[i]) continue
@@ -121,6 +126,7 @@ while(!pq.isEmpty()) {
         if(a != GOAL[i][1]) {
             for(next in near[a]) {
                 if(visited[next]) continue
+                if(a > 10 && next >= 0 && next <= 10 && n_at_top >= 4) continue
 
                 def new_state = [state[0], state[1], state[2], state[3]] 
                 // why is this a problem? new_state[i] = next < b ? (next << 32L) + b : (b << 32L) + next
@@ -142,6 +148,7 @@ while(!pq.isEmpty()) {
         if(b != GOAL[i][1]) {
             for(next in near[b]) {
                 if(visited[next]) continue
+                if(b > 10 && next >= 0 && next <= 10 && n_at_top >= 4) continue
 
                 def new_state = [state[0], state[1], state[2], state[3]] 
 
