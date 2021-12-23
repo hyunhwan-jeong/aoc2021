@@ -6,115 +6,132 @@ new File("day23.in").eachLine {
 N = board.size()
 M = board[0].size()
 
-
-
-for(i in 0..N-1) for(j in 0..M-1) {
-    if(board[i][j] == ' ') board[i][j] = '#'
+index = new int[N][M]
+index.each{
+    Arrays.fill(it,-1)
 }
 
-V = new boolean[N][M]
+K = 0
 
-
-board = board[1..N-2]
-N = board.size()
+start_state = [[],[],[],[]]
 
 for(i in 0..N-1) for(j in 0..M-1) {
-    if(board[i][j] != '.') V[i][j] = true
+    if(board[i][j] != '#') {
+        index[i][j] = K++
+        if(board[i][j] != '.') {
+            println board[i][j] as char
+            start_state[(board[i][j] as char)-('A' as char)].add(index[i][j])
+        }
+    }
 }
 
-GOAL = "#...........####A#B#C#D######A#B#C#D###"
+print start_state
+near = [] 
 
-cache = [:]
+
+for(i in 0..K-1) {
+    near.add([])
+}
+
 di = [-1,1,0,0]
 dj = [0,0,-1,1]
+
+for(i in 0..N-1) for(j in 0..M-1) if(index[i][j]!=-1) {
+    for(k in 0..3) {
+        ii = i + di[k]
+        jj = j + dj[k]
+        if(ii>=0 && ii<N && jj>=0 && jj<M && index[ii][jj]!=-1) {
+            near[index[i][j]].add(index[ii][jj])
+        }
+    }
+}
+
+println near
+
+GOAL = [[11,15], [12,16], [13,17], [14,18]]
+println GOAL
+cache = [:]
 
 import groovy.transform.Canonical
 
 @Canonical
 class Node implements Comparable<Node> {
     int cost
-    String state
+    List state
     int compareTo(Node other) {
         return cost <=> other?.cost
     }
 }
 
-def solve(B) {
-    def best = null
-    def best_hamming = 987654321
-    def best_cost = 987654321
-    pq = new PriorityQueue<Node>()
-    pq.add(new Node(cost: 0, state: B.join("")))
+println "search starts"
+pq = new PriorityQueue<Node>()
+pq.add(new Node(cost: 0, state: start_state))
+cache[start_state] = 0
 
-    def timer = 0
-    while(!pq.isEmpty()) {
-        def node = pq.poll()
-        def state = node.state
-        if(state == GOAL) return node.cost
-        if(state in cache[state] && cache[state][state] < node.cost) continue
-        def board = new char[N][M]
-        for(i in 0..N-1) for(j in 0..M-1) board[i][j] = state[i*M+j]
+timer = 0 
+cost = [1, 10, 100, 1000]
+while(!pq.isEmpty()) {
+    def node = pq.poll()
+    def state = node.state
+    if(state == GOAL) {
+        println node.cost
+        break
+    }
+    if(cache[state] < node.cost) continue
 
-        def hamming = 0
-        for(i in 0..GOAL.length()-1) {
-            if(state[i] != GOAL[i]) hamming++
-        }
+    if(timer++ % 100000 == 0) {
+        println "at $timer = $state and $node.cost"
+    }
 
-        if(hamming < best_hamming) {
-            best_hamming = hamming
-            best = board
-            best_cost = node.cost
-        }
-        if(timer++ % 100000 == 0) {
-            for(b in best) println b
-            println "diff: $best_hamming, cost: $best_cost"
-            println "current $timer -> $node.cost"
-        }
+    def visited = new boolean[K]
+    // println "testing... at $node.cost"
+    for(s in state) {
+        visited[s[0]] = true
+        visited[s[1]] = true
+    }
 
-        for(i in 0..N-1) for(j in 1..M-2) {
-            if(board[i][j] == '.') continue
-            if(board[i][j] == '#') continue
-            if(i == 2) {
-                if(j == 3 && board[i][j] == 'A') continue
-                if(j == 5 && board[i][j] == 'B') continue
-                if(j == 7 && board[i][j] == 'C') continue
-                if(j == 9 && board[i][j] == 'D') continue
-            }
-            if(i == 1) {
-               if(j == 3 && board[i][j] == 'A' && board[i+1][j] == board[i][j]) continue 
-               if(j == 5 && board[i][j] == 'B' && board[i+1][j] == board[i][j]) continue 
-               if(j == 7 && board[i][j] == 'C' && board[i+1][j] == board[i][j]) continue 
-               if(j == 9 && board[i][j] == 'D' && board[i+1][j] == board[i][j]) continue 
-            }
-            for(k in 0..3) {
-                ni = i + di[k]
-                nj = j + dj[k]
-                if(ni<0||ni>=N) continue
-                if(nj<0||nj>=M) continue
-                if(board[ni][nj] != '.') continue
+    for(i in 0..3) {
+        if(state[i]==GOAL[i]) continue
+        def a = state[i][0]
+        def b = state[i][1]
+        if(a != GOAL[i][1]) {
+            for(next in near[a]) {
+                if(visited[next]) continue
 
-                board[ni][nj] = board[i][j]
-                board[i][j] = '.'
-
-                cost = 1
-                if(board[ni][nj] == 'B') cost = 10
-                else if(board[ni][nj]=='C') cost = 100
-                else if(board[ni][nj]=='D') cost = 1000
-
-                new_state = board.join("")
-                if(!cache.containsKey(new_state) || cache[new_state] > node.cost + cost) {
-                    // println "new_state $new_state"
-                    cache[new_state] = node.cost + cost
-                    pq.add(new Node(cost: node.cost + cost, state: new_state))
+                def new_state = [state[0], state[1], state[2], state[3]] 
+                // why is this a problem? new_state[i] = next < b ? (next << 32L) + b : (b << 32L) + next
+                if (next < b) {
+                    new_state[i] = [next, b]
+                } else {
+                    new_state[i] = [b, next]
                 }
                 
-                board[i][j] = board[ni][nj]
-                board[ni][nj] = '.'
+                if(cache.containsKey(new_state) && cache[new_state] <= node.cost + cost[i]) continue
+                cache[new_state] = node.cost + cost[i]
+
+                //println "($a and $b) => $next and $b, cost: ${cache[new_state]}, new_state = ${new_state[i]}"
+
+                pq.add(new Node(cost: cache[new_state], state: new_state))
             }
         }
+        if(b != GOAL[i][1]) {
+            for(next in near[b]) {
+                if(visited[next]) continue
 
+                def new_state = [state[0], state[1], state[2], state[3]] 
+
+                if (next < a) {
+                    new_state[i] = [next, a]
+                } else {
+                    new_state[i] = [a, next]
+                }
+
+                if(cache.containsKey(new_state) && cache[new_state] <= node.cost + cost[i]) continue
+                cache[new_state] = node.cost + cost[i]
+
+                //println "($a and $b) => $next and $a, cost: ${cache[new_state]}, new_state = ${new_state[i]}"
+                pq.add(new Node(cost: cache[new_state], state: new_state))
+            }
+        }
     }
-    return -1
 }
-
-println solve(board)
