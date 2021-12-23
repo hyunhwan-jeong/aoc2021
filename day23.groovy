@@ -68,9 +68,10 @@ def solve(B) {
         if(timer++ % 100000 == 0) {
             for(b in best) println b
             println "diff: $best_hamming, cost: $best_cost"
+            println "current $timer -> $node.cost"
         }
 
-        for(i in 0..N-1) for(j in 0..M-1) {
+        for(i in 0..N-1) for(j in 1..M-2) {
             if(board[i][j] == '.') continue
             if(board[i][j] == '#') continue
             if(i == 2) {
