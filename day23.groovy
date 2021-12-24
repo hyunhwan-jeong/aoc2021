@@ -5,7 +5,7 @@ new File("day23.in").eachLine {
 
 N = board.size()
 M = board[0].size()
-
+H = N - 3
 index = new int[N][M]
 index.each{
     Arrays.fill(it,-1)
@@ -23,6 +23,10 @@ for(i in 0..N-1) for(j in 0..M-1) {
             start_state[(board[i][j] as char)-('A' as char)].add(index[i][j])
         }
     }
+}
+
+for(i in index) {
+    println i
 }
 
 dist = new int[K][K]
@@ -50,8 +54,16 @@ dj = [0,0,-1,1]
 
 // println near
 
-GOAL = [[11,15], [12,16], [13,17], [14,18]]
-// println GOAL
+GOAL = [[],[],[],[]]
+cur_idx = 11
+for(j in 0..H-1) {
+    for(i in 0..3) {
+        GOAL[i].add(cur_idx++)
+    }
+}
+
+println GOAL
+
 cache = [:]
 
 import groovy.transform.Canonical
@@ -61,8 +73,8 @@ cost = [1, 10, 100, 1000]
 def calc_approx(cur_state) {
     def cur_dist = 0
     for(i in 0..3) {
-        for(j in 0..1) {
-            cur_dist += dist[cur_state[i][j]][GOAL[i][1]] * 2 * cost[i]
+        for(j in 0..H-1) {
+            cur_dist += dist[cur_state[i][j]][GOAL[i][H-1]] * 2 * cost[i]
         }
     }
     cur_dist
@@ -74,19 +86,18 @@ class Node implements Comparable<Node> {
     int approx
     List state
     int compareTo(Node other) {
-        return cost + approx <=> other?.cost + approx
+        // return cost + approx <=> other?.cost + approx
+        return cost <=> other?.cost 
     }
 }
 
 println "search starts"
 // println calc_approx(start_state)
 pq = new PriorityQueue<Node>()
-pq.add(new Node(cost: 0, state: start_state, approx : 0))
+pq.add(new Node(cost: 0, state: start_state, approx : calc_approx(start_state)))
 cache[start_state] = calc_approx(start_state)
 
 
-best_approx = 987654321
-best_node = null
 
 timer = 0 
 
@@ -96,34 +107,34 @@ def add_node(pq, new_state, node, kind, move_cost) {
     def new_cost = node.cost + move_cost * cost[kind]
     if(!cache.containsKey(new_state) || cache[new_state] > new_cost) {
         cache[new_state] = new_cost 
-        pq.add(new Node(cost: new_cost, state: new_state, approx: 0))
+        pq.add(new Node(cost: new_cost, state: new_state, approx: cur_approx))
     }
 }
 
+def display_status(v) {
+    
+    print "#"
+    for(j in 0..10) if(v[j]==-1) print "." else print v[j] 
+    println "#"
+
+    s = 11
+    for(k in 0..(H-1)) {
+        print "###"
+        for(j in s..(s+3)) {
+            if(v[j]==-1) print "." else print "${v[j]}"
+            if(j != s+3) print "#"
+        }
+        s += 4
+        println "###"
+    }
+
+}
 def is_feasible(where, target, v) {
     //println "$where, $target, $v" 
     def visited = new int[K]
     for(j in 0..K-1) visited[j] = v[j]
     visited[where] = -1
     visited[target] = -1
-    /*
-    println "$where -> $target"
-    print "#"
-    for(j in 0..10) if(visited[j]==-1) print "." else print visited[j] 
-    println "#"
-    print "###"
-    for(j in 11..14) {
-        if(visited[j]==-1) print "." else print "${visited[j]}"
-        if(j != 14) print "#"
-    }
-    println "###"
-    print "###"
-    for(j in 15..18) {
-        if(visited[j]==-1) print "." else print "${visited[j]}"
-        if(j != 18) print "#"
-    }
-    println "###"
-    */
     
     while(true) {
         // println "current: $where"
@@ -147,11 +158,25 @@ def is_feasible(where, target, v) {
     return true
 }
 
+
 while(!pq.isEmpty()) {
     def node = pq.poll()
     def state = node.state
+
+    def visited = new int[K]
+    // println "testing... at $node.cost"
+
+    Arrays.fill(visited, -1)
+    for(i in 0..3) {
+        for(j in 0..(H-1)) {
+            visited[state[i][j]] = i
+        }
+    }
+    if(timer == 0) display_status(visited)
+
     if(state == GOAL) {
-        println node.cost
+        println "answer: $node.cost"
+        display_status(visited)
         break
     }
     if(cache[state] < node.cost) continue
@@ -160,27 +185,20 @@ while(!pq.isEmpty()) {
         best_approx = node.cost
         best_node = node
     }*/
-    if(timer++ % 10000 == 0) {
+    if(timer++ % 100000 == 0) {
         // println "at $timer = $best_node.state: $best_node.cost [estimated distance: ${best_node.approx}]"
         println "at $timer, searching a node with $node.cost"
+        display_status(visited)
+
     }
 
-    def visited = new int[K]
-    // println "testing... at $node.cost"
-
-    Arrays.fill(visited, -1)
-    for(i in 0..3) {
-        for(j in 0..1) {
-            visited[state[i][j]] = i
-        }
-    }
 
 
     for(i in 0..3) {
         if(state[i]==GOAL[i]) continue
-        for(x in 0..1) {
+        for(x in 0..H-1) {
             if(state[i][x] <= 10) {
-                for(j in 1..0) {
+                for(j in (H-1)..0) {
                     if(visited[GOAL[i][j]] == i) continue
                     if(visited[GOAL[i][j]] == -1) {
                         if(is_feasible(GOAL[i][j], state[i][x], visited)) {
@@ -197,8 +215,8 @@ while(!pq.isEmpty()) {
                 }
             } else {
                 def is_stable = false
-                def is_obstacle = false
-                for(j in 1..0) {
+
+                for(j in (H-1)..0) {
                     if(state[i][x] == GOAL[i][j]) {
                         is_stable = true
                         break
@@ -210,7 +228,7 @@ while(!pq.isEmpty()) {
 
                 if(is_stable) continue
 
-                for(target in 0..10) if(visited[target] == -1) {
+                for(target in [0,1,3,5,7,9,10]) if(visited[target] == -1) {
                     def where = state[i][x]
                    
                     if(!is_feasible(state[i][x], target, visited)) continue
