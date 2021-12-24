@@ -93,6 +93,10 @@ pq = new PriorityQueue<Node>()
 pq.add(new Node(cost: 0, state: start_state, approx : calc_approx(start_state)))
 cache[start_state] = calc_approx(start_state)
 
+
+best_approx = 987654321
+best_node = null
+
 timer = 0 
 while(!pq.isEmpty()) {
     def node = pq.poll()
@@ -103,8 +107,12 @@ while(!pq.isEmpty()) {
     }
     if(cache[state] < node.cost) continue
 
+    if(node.approx < best_approx) {
+        best_approx = node.approx
+        best_node = node
+    }
     if(timer++ % 1000000 == 0) {
-        println "at $timer = $state and $node.cost"
+        println "at $timer = $best_node.state: $best_node.cost [estimated distance: ${best_node.approx}]"
     }
 
     def visited = new boolean[K]
@@ -137,6 +145,8 @@ while(!pq.isEmpty()) {
                 }
                 
                 def cur_approx = calc_approx(new_state)
+                if(node.cost + cost[i] + cur_approx >= 13499) continue
+
                 if(cache.containsKey(new_state) && cache[new_state] <= node.cost + cost[i]) continue
                 cache[new_state] = node.cost + cost[i]
 
@@ -159,7 +169,9 @@ while(!pq.isEmpty()) {
                 }
 
                 def cur_approx = calc_approx(new_state)
+                if(node.cost + cost[i] + cur_approx >= 13499) continue
                 if(cache.containsKey(new_state) && cache[new_state] <= node.cost + cost[i]) continue
+
                 cache[new_state] = node.cost + cost[i] 
 
                 //println "($a and $b) => $next and $a, cost: ${cache[new_state]}, new_state = ${new_state[i]}"
